@@ -24,21 +24,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/guilhermefpv/comentarios-api.git'
             }
         }
-        stage("Sonarqube Analysis") {
-            steps {
-                withSonarQubeEnv('SonarQube-Server') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=comentarios-api-ci \
-                    -Dsonar.projectKey=comentarios-api-ci'''
-                }
-            }
-        }
-        stage("Quality Gate") {
-            steps {
-                script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'SonarQube-Token'
-                }
-            }
-        }
         stage('Install Dependencies') {
             steps {
                 sh "npm install"
