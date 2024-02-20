@@ -38,7 +38,7 @@ pipeline {
              steps {
                  script {
                      docker.withRegistry('',DOCKER_PASS) {
-                        docker_image = docker.build("${IMAGE_NAME}"  "--target=production"   "--build-arg INSTALL_PYTHON_VERSION=3.7.4 .")
+                        docker_image = docker.build("${IMAGE_NAME}" --target=production  --build-arg INSTALL_PYTHON_VERSION=3.7.4 .)
                      }
                      docker.withRegistry('',DOCKER_PASS) {
                          docker_image.push("${IMAGE_TAG}")
