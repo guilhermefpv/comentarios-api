@@ -37,8 +37,13 @@ pipeline {
 	 stage("Build & Push Docker Image") {
              steps {
                  script {
+                    def buildArgs = """\
+                        --build-arg INSTALL_PYTHON_VERSION=3.7.4 \
+                        --target=production \
+                        -f Dockerfile \
+                        ."""
                      docker.withRegistry('',DOCKER_PASS) {
-                        docker_image = docker.build("${IMAGE_NAME}" --target=production  --build-arg INSTALL_PYTHON_VERSION=3.7.4 .)
+                        docker_image = docker.build("${IMAGE_NAME}", buildArgs)
                      }
                      docker.withRegistry('',DOCKER_PASS) {
                          docker_image.push("${IMAGE_TAG}")
