@@ -24,14 +24,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/guilhermefpv/comments-api.git'
             }
         }
-        stage("Sonarqube Analysis") {
-            steps {
-                withSonarQubeEnv('SonarQube-Server') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=comments-api-ci \
-                    -Dsonar.projectKey=comments-api-ci'''
-                }
-            }
-        }
         stage("Quality Gate") {
             steps {
                 script {
@@ -39,11 +31,11 @@ pipeline {
                 }
             }
         }
-        // stage('Install Dependencies') {
-        //     steps {
-        //         sh "npm install"
-        //     }
-        // }
+        stage('Install Dependencies') {
+            steps {
+                sh "npm install"
+            }
+        }
         stage('TRIVY FS SCAN') {
             steps {
                 sh "trivy fs . > trivyfs.txt"
