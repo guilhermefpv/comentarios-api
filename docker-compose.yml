@@ -1,0 +1,46 @@
+version: "3.8"
+
+x-build-args: &build_args
+  INSTALL_PYTHON_VERSION: "3.7.4"
+
+x-default-volumes: &default_volumes
+  volumes:
+    - ./:/app
+
+services:
+  flask-dev:
+    build:
+      context: .
+      target: development
+      args:
+        <<: *build_args
+    image: "comentarios-api-development"
+    ports:
+      - "8000:8000"
+    <<: *default_volumes
+  # nginx:
+  #   build:
+  #     context: ./nginx
+  #   ports:
+  #     - 80:80
+  #   container_name: clocktime-nginx
+  #   hostname: clocktime-nginx
+  #   links:
+  #     - flask-prod
+  flask-prod:
+    build:
+      context: .
+      target: production
+      args:
+        <<: *build_args
+    image: "comentarios-api-production"
+    container_name: comentarios-api
+    hostname: comentarios-api
+    ports:
+      - "8000:8000"
+    environment:
+      FLASK_ENV: production
+      FLASK_DEBUG: 0
+      LOG_LEVEL: info
+      GUNICORN_WORKERS: 4
+    <<: *default_volumes
