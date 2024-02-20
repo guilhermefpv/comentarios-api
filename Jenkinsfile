@@ -6,7 +6,7 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        APP_NAME = "comments-api"
+        APP_NAME = "comentarios-api"
         RELEASE = "1.0.0"
         DOCKER_USER = "guilhermefpv"
         DOCKER_PASS = 'dockerhub'
@@ -24,6 +24,21 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/guilhermefpv/comentarios-api.git'
             }
         }
+        stage("Sonarqube Analysis") {
+            steps {
+                withSonarQubeEnv('SonarQube-Server') {
+                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=comentarios-api-ci \
+                    -Dsonar.projectKey=comentarios-api-ci'''
+                }
+            }
+        }
+        stage("Quality Gate") {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'SonarQube-Token'
+                }
+            }
+        }
         stage('Install Dependencies') {
             steps {
                 sh "npm install"
@@ -38,7 +53,7 @@ pipeline {
              steps {
                  script {
                      docker.withRegistry('',DOCKER_PASS) {
-                         docker_image = docker.build("${IMAGE_NAME}", "--build-arg INSTALL_PYTHON_VERSION=3.7.4 .") 
+                        def docker_image = docker.build("${IMAGE_NAME}", "--target=production", "--build-arg INSTALL_PYTHON_VERSION=3.7.4 .")
                      }
                      docker.withRegistry('',DOCKER_PASS) {
                          docker_image.push("${IMAGE_TAG}")
