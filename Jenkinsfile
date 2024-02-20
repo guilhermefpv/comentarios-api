@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Checkout from Git') {
             steps {
-                git branch: 'main', url: 'https://github.com/guilhermefpv/comments-api.git'
+                git branch: 'main', url: 'https://github.com/guilhermefpv/comentarios-api.git
             }
         }
         stage('Install Dependencies') {
