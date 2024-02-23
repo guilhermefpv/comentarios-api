@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: comentarios-api
+spec:
+  selector:
+    app: comentarios-api
+  ports:
+    - protocol: "TCP"
+      port: 8000
+      targetPort: 5000
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comentarios-api
+spec:
+  selector:
+    matchLabels:
+      app: comentarios-api
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app: comentarios-api
+    spec:
+      containers:
+        - name: comentarios-api
+          image: docker.io/guilhermefpv/comentarios-api
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
