@@ -1,0 +1,36 @@
+include:
+  - template: AWS/Deploy-ECS.gitlab-ci.yml
+
+
+# stages:
+#     - trivy file scan
+#     - docker
+#     - trivy image scan
+
+# Trivy file scan:
+#   stage: trivy file scan
+#   image:
+#     name: aquasec/trivy:latest
+#     entrypoint: [""]
+#   script:
+#     - trivy fs . 
+
+# Docker build and push:
+#   stage: docker
+#   image:
+#     name: docker:latest
+#   services:
+#     - docker:dind   
+#   script:
+#     - docker build --build-arg INSTALL_PYTHON_VERSION=3.7.4 --target=production -t comentarios-api .
+#     - docker tag comentarios-api guilhermefpv/comentarios-api:latest
+#     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#     - docker push guilhermefpv/comentarios-api:latest
+
+# Scan image:
+#   stage: trivy image scan
+#   image:
+#     name: aquasec/trivy:latest
+#     entrypoint: [""]
+#   script:
+#     - trivy image guilhermefpv/comentarios-api:latest
