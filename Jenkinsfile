@@ -6,13 +6,12 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        APP_NAME = "comments-api"
+        APP_NAME = "comentarios-api"
         RELEASE = "1.0.0"
         DOCKER_USER = "guilhermefpv"
         DOCKER_PASS = 'dockerhub'
         IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-	JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
     }
     stages {
         stage('clean workspace') {
@@ -22,14 +21,14 @@ pipeline {
         }
         stage('Checkout from Git') {
             steps {
-                git branch: 'main', url: 'https://github.com/guilhermefpv/comments-api.git'
+                git branch: 'main', url: 'https://github.com/guilhermefpv/comentarios-api.git'
             }
         }
         stage("Sonarqube Analysis") {
             steps {
                 withSonarQubeEnv('SonarQube-Server') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=comments-api-ci \
-                    -Dsonar.projectKey=comments-api-ci'''
+                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=comentarios-api-ci \
+                    -Dsonar.projectKey=comentarios-api-ci'''
                 }
             }
         }
@@ -40,11 +39,11 @@ pipeline {
                 }
             }
         }
-        // stage('Install Dependencies') {
-        //     steps {
-        //         sh "npm install"
-        //     }
-        // }
+        stage('Install Dependencies') {
+            steps {
+                sh "npm install"
+            }
+        }
         stage('TRIVY FS SCAN') {
             steps {
                 sh "trivy fs . > trivyfs.txt"
@@ -53,8 +52,13 @@ pipeline {
 	 stage("Build & Push Docker Image") {
              steps {
                  script {
+                    def buildArgs = """\
+                        --build-arg INSTALL_PYTHON_VERSION=3.7.4 \
+                        --target=production \
+                        -f Dockerfile \
+                        ."""
                      docker.withRegistry('',DOCKER_PASS) {
-                         docker_image = docker.build "${IMAGE_NAME}"
+                        docker_image = docker.build("${IMAGE_NAME}", buildArgs)
                      }
                      docker.withRegistry('',DOCKER_PASS) {
                          docker_image.push("${IMAGE_TAG}")
@@ -85,17 +89,5 @@ pipeline {
                 }
             }
          }
-     }
-     post {
-        always {
-           emailext attachLog: true,
-               subject: "'${currentBuild.result}'",
-               body: "Project: ${env.JOB_NAME}<br/>" +
-                   "Build Number: ${env.BUILD_NUMBER}<br/>" +
-                   "URL: ${env.BUILD_URL}<br/>",
-               to: 'guilhermefpv@outlook.com',                              
-               attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
-        }
-     }
-    
+     }    
 }

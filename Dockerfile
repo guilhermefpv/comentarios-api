@@ -16,8 +16,12 @@ COPY app app
 COPY .env.default .env
 
 # ================================= PRODUCTION =================================
+<<<<<<< HEAD
 #FROM python:3.7.4-slim-buster as production
 FROM python:${INSTALL_PYTHON_VERSION}-slim-buster as production
+=======
+FROM python:3.7.4-slim-buster as production
+>>>>>>> 1a2e1615a14acc84667a0f7664ca8ed6ce42b9eb
 
 # Update Packages
 RUN apt-get -y update && \
