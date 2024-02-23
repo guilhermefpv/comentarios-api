@@ -3,7 +3,7 @@ ARG INSTALL_PYTHON_VERSION=${INSTALL_PYTHON_VERSION:-PYTHON_VERSION_NOT_SET}
 
 FROM python:${INSTALL_PYTHON_VERSION}-slim-buster AS builder
 
-# application folder
+# # application folder
 ENV APP_DIR /app
 
 WORKDIR /app
@@ -16,6 +16,7 @@ COPY app app
 COPY .env.default .env
 
 # ================================= PRODUCTION =================================
+#FROM python:3.7.4-slim-buster as production
 FROM python:${INSTALL_PYTHON_VERSION}-slim-buster as production
 
 # Update Packages
@@ -70,9 +71,10 @@ COPY . .
 # COPY ./app ${APP_DIR}
 
 # VOLUME ["${APP_DIR}"]
-
+# "ENV_LOG_LEVEL", "debug"
 EXPOSE 8000
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+#CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--worker-tmp-dir", "/dev/shm", "--workers", "2", "--worker-class", "gevent", "--worker-connections", "1000", "wsgi:app", "--log-level", "debug"]
 
 # ================================= DEVELOPMENT ================================
 # FROM builder AS development
