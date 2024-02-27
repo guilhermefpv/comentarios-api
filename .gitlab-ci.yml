@@ -14,6 +14,7 @@ sast:
 
 include:
 - template: Security/SAST.gitlab-ci.yml
+- template: AWS/Deploy-ECS.gitlab-ci.yml
 
 image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
 # image:
@@ -41,20 +42,19 @@ docker-build:
     - docker push ${CI_AWS_ECR_REPOSITORY_URL}:latest
   only:
     - dev
-
-deploy-aws-fargate:
-  stage: deploy
-  script:
-    - echo $CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG
-    - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_NAME" --region "${AWS_DEFAULT_REGION}")
-    - NEW_CONTAINER_DEFINTIION=$(echo $CI_AWS_ECS_TASK_DEFINITION | jq --arg IMAGE "$CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
-    - echo "Registering new container definition..."
-    - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
-    - echo "Updating the service..."
-    - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}"  --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
-  only:
-    - dev
-
+# CI_AWS_ECS_TASK_DEFINITION=my_task_definition.json
+# deploy-aws-fargate:
+#   stage: deploy
+#   script:
+#     - echo $CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG
+#     - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_NAME" --region "${AWS_DEFAULT_REGION}")
+#     - NEW_CONTAINER_DEFINTIION=$(echo $CI_AWS_ECS_TASK_DEFINITION | jq --arg IMAGE "$CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
+#     - echo "Registering new container definition..."
+#     - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
+#     - echo "Updating the service..."
+#     - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}"  --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
+#   only:
+#     - dev 
 
 # stages:
 #   - trivy file scan
