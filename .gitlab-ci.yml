@@ -8,13 +8,9 @@
 stages:
   - test
   - build
-  - deploy
+  # - deploy
 sast:
   stage: test
-
-include:
-- template: Security/SAST.gitlab-ci.yml
-- template: AWS/Deploy-ECS.gitlab-ci.yml
 
 image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
 # image:
@@ -42,7 +38,8 @@ docker-build:
     - docker push ${CI_AWS_ECR_REPOSITORY_URL}:latest
   only:
     - dev
-# CI_AWS_ECS_TASK_DEFINITION=my_task_definition.json
+# CI_AWS_ECS_TASK_DEFINITION=my-task-definition
+# CI_AWS_ECS_TASK_DEFINITION_FILE = task_definition.json
 # deploy-aws-fargate:
 #   stage: deploy
 #   script:
@@ -55,6 +52,11 @@ docker-build:
 #     - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}"  --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
 #   only:
 #     - dev 
+
+
+include:
+- template: Security/SAST.gitlab-ci.yml
+- template: AWS/Deploy-ECS.gitlab-ci.yml
 
 # stages:
 #   - trivy file scan
