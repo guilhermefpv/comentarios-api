@@ -77,9 +77,9 @@ deploy-aws-fargate:
 #     - trivy image $CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG
 
 
-# include:
+include:
 #   - template: Security/SAST.gitlab-ci.yml
-#   - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
 #   - template: AWS/Deploy-ECS.gitlab-ci.yml
 
 # CI_AWS_ECS_CLUSTER
