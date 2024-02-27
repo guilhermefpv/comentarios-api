@@ -20,7 +20,10 @@ docker-build:
   image:
     name: amazon/aws-cli
     entrypoint: [""]
-
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   services:
     - docker:dind
 
