@@ -16,32 +16,30 @@ services:
 
 stages:
   - test
-  # - trivy file scan
+  - trivy file scan
   - build
+  - trivy image scan
   - deploy
+
 sast:
   stage: test
 include:
 - template: Security/SAST.gitlab-ci.yml
 
-# stages:
-#   - trivy file scan
-#   # - trivy image scan
-
-# Trivy-file-scan:
-#   stage: trivy file scan
-#   image:
-#     name: aquasec/trivy:latest
-#     entrypoint: [""]
-#   script:
-#     - trivy fs . 
+trivy-file-scan:
+  stage: trivy file scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy fs . 
 
 docker-build:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   stage: build
   script:
-    - aws --version
-    - docker --version
+    # - aws --version
+    # - docker --version
     - echo Login AWS ${AWS_DEFAULT_REGION} ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest 
     - aws ecr get-login-password --region "${AWS_DEFAULT_REGION}" | docker login --username AWS --password-stdin "$CI_AWS_ECR_REPOSITORY_URL"
     - echo "Building image for ${CI_COMMIT_TAG}"
@@ -52,6 +50,15 @@ docker-build:
   only:
     - dev
 
+scan-image:
+  stage: trivy image scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - echo ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest
+    - trivy image ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest
+
 deploy-aws-fargate:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   stage: deploy
@@ -61,28 +68,15 @@ deploy-aws-fargate:
     - echo ${TASK_DEFINITION}
     - NEW_CONTAINER_DEFINTIION=$(echo $TASK_DEFINITION | jq --arg IMAGE "${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
     - echo "Registering new container definition..." ${NEW_CONTAINER_DEFINTIION}
-    # - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
+    - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
     - echo "Updating the service..."
-    # - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}"  --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
+    - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}"  --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
   only:
     - dev
-
-
-
-# Scan-image:
-#   stage: trivy image scan
-#   image:
-#     name: aquasec/trivy:latest
-#     entrypoint: [""]
-#   script:
-#     - echo $CCI_AWS_ECR_REPOSITORY_URLL:$IMAGE_TAG
-#     - trivy image $CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG
-
 
 # include:
 #   - template: Jobs/SAST.gitlab-ci.yml
 #   - template: AWS/Deploy-ECS.gitlab-ci.yml
-
 
 # CI_AWS_ECS_CLUSTER
 # CI_AWS_ECS_SERVICE
