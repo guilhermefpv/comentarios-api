@@ -6,12 +6,6 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 
-  # image:
-  #   name: amazon/aws-cli
-  #   entrypoint: [""]
-
-
-
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
@@ -20,21 +14,14 @@ variables:
 services:
   - docker:dind
 
-# before_script:
-#   # - amazon-linux-extras install docker
-#   - aws --version
-#   - docker --version}}
-
 stages:
-  - test
+  # - test
   - build
   - deploy
 sast:
   stage: test
 include:
 - template: Security/SAST.gitlab-ci.yml
-
-
 
 docker-build:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
@@ -58,7 +45,7 @@ deploy-aws-fargate:
   stage: deploy
   script:
     - echo ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest
-    - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_NAME" --region "${AWS_DEFAULT_REGION}")
+    - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$CI_AWS_ECS_TASK_DEFINITION" --region "${AWS_DEFAULT_REGION}")
     - NEW_CONTAINER_DEFINTIION=$(echo $CI_AWS_ECS_TASK_DEFINITION | jq --arg IMAGE "${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
     - echo "Registering new container definition..."
     - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
