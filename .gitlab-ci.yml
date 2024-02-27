@@ -15,9 +15,10 @@ sast:
 include:
 - template: Security/SAST.gitlab-ci.yml
 
-image:
-  name: amazon/aws-cli
-  entrypoint: [""]
+image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+# image:
+#   name: amazon/aws-cli
+#   entrypoint: [""]
 
 services:
   - docker:dind
