@@ -34,9 +34,9 @@ docker-build:
     # 730866387406.dkr.ecr.us-east-1.amazonaws.com/comentarios-api
     - (aws ecr get-login-password --region "${AWS_DEFAULT_REGION}" | docker login --username AWS --password-stdin "$CI_AWS_ECR_REPOSITORY_URL")
     - echo "Building image for ${CI_COMMIT_TAG}"
-    - docker build -t ${CI_AWS_ECR_REPOSITORY_URL}:${CI_COMMIT_TAG} -t ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest .
+    - docker build -t ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest .
     - echo "Pushing image..."
-    - docker push ${CI_AWS_ECR_REPOSITORY_URL}:${CI_COMMIT_TAG}
+    # - docker push ${CI_AWS_ECR_REPOSITORY_URL}:${CI_COMMIT_TAG}
     - docker push ${CI_AWS_ECR_REPOSITORY_URL}:latest
   only:
     - dev
