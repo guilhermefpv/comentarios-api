@@ -11,23 +11,23 @@ stages:
   - deploy
 sast:
   stage: test
+
 include:
 - template: Security/SAST.gitlab-ci.yml
 
+image:
+  name: amazon/aws-cli
+  entrypoint: [""]
 
+services:
+  - docker:dind
+
+before_script:
+  - amazon-linux-extras install docker
+  - aws --version
+  - docker --version
 
 docker-build:
-  image:
-    name: amazon/aws-cli
-    entrypoint: [""]
-
-  services:
-    - docker:dind
-
-  before_script:
-    - amazon-linux-extras install docker
-    - aws --version
-    - docker --version
   stage: build
   script:
     - echo Login AWS ${AWS_DEFAULT_REGION} ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest 
