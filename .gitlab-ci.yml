@@ -58,6 +58,7 @@ deploy-aws-fargate:
   script:
     - echo ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest
     - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$CI_AWS_ECS_TASK_DEFINITION" --region "${AWS_DEFAULT_REGION}")
+    - echo ${TASK_DEFINITION}
     - NEW_CONTAINER_DEFINTIION=$(echo $CI_AWS_ECS_TASK_DEFINITION | jq --arg IMAGE "${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
     - echo "Registering new container definition..."
     - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
