@@ -9,18 +9,21 @@
   # image:
   #   name: amazon/aws-cli
   #   entrypoint: [""]
-  # variables:
-  #   DOCKER_HOST: tcp://docker:2375
-  #   DOCKER_DRIVER: overlay2
-  #   DOCKER_TLS_CERTDIR: ""
-  # services:
-  #   - docker:dind
 
-  # before_script:
-  #   - amazon-linux-extras install docker
-  #   - aws --version
-  #   - docker --version
 image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+
+services:
+  - docker:dind
+
+before_script:
+  # - amazon-linux-extras install docker
+  - aws --version
+  - docker --version}}
 
 stages:
   - test
