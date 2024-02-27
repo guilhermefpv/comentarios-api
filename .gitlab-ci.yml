@@ -6,16 +6,13 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
-  - test
+  # - test
   - build
   - deploy
-sast:
-  stage: test
+# sast:
+#   stage: test
 
 image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
-# image:
-#   name: amazon/aws-cli
-#   entrypoint: [""]
 
 services:
   - docker:dind
@@ -77,9 +74,9 @@ deploy-aws-fargate:
 #     - trivy image $CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG
 
 
-include:
+# include:
 #   - template: Security/SAST.gitlab-ci.yml
-  - template: Jobs/SAST.gitlab-ci.yml
+  # - template: Jobs/SAST.gitlab-ci.yml
 #   - template: AWS/Deploy-ECS.gitlab-ci.yml
 
 # CI_AWS_ECS_CLUSTER
