@@ -8,7 +8,7 @@
 stages:
   - test
   - build
-  # - deploy
+  - deploy
 sast:
   stage: test
 
