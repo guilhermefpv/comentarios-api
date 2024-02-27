@@ -5,6 +5,23 @@
 # Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+
+  # image:
+  #   name: amazon/aws-cli
+  #   entrypoint: [""]
+  # variables:
+  #   DOCKER_HOST: tcp://docker:2375
+  #   DOCKER_DRIVER: overlay2
+  #   DOCKER_TLS_CERTDIR: ""
+  # services:
+  #   - docker:dind
+
+  # before_script:
+  #   - amazon-linux-extras install docker
+  #   - aws --version
+  #   - docker --version
+image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+
 stages:
   - test
   - build
@@ -17,20 +34,6 @@ include:
 
 
 docker-build:
-  image:
-    name: amazon/aws-cli
-    entrypoint: [""]
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-  services:
-    - docker:dind
-
-  before_script:
-    - amazon-linux-extras install docker
-    - aws --version
-    - docker --version
   stage: build
   script:
     - echo Login AWS ${AWS_DEFAULT_REGION} ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest 
