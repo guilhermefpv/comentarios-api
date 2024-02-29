@@ -1,0 +1,23 @@
+[
+  {
+      "name": "${APP_NAME}",
+      "image": "730866387406.dkr.ecr.us-east-1.amazonaws.com/comentarios-api:latest",
+      "essential": true,
+      "cpu": 256,
+      "memory": 256,
+      "portMappings": [
+          {
+              "containerPort": ${CONTAINER_PORT},
+              "hostPort": ${CONTAINER_PORT}
+          }
+      ],
+      "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+              "awslogs-region": "${REGION}",
+              "awslogs-stream-prefix": "app-logstream",
+              "awslogs-group": "${LOG_GROUP}"
+          }
+      }
+  }
+]
