@@ -16,6 +16,7 @@ stages:
 sast:
   stage: test
 
+image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
 
 trivy-file-scan:
   stage: trivy file scan
@@ -78,3 +79,5 @@ include:
 # CI_AWS_ECS_SERVICE
 # CI_AWS_ECR_REPOSITORY_URL
 # CI_AWS_ECS_TASK_DEFINITION
+# CI_AWS_ECS_TASK_DEFINITION=my-task-definition
+# CI_AWS_ECS_TASK_DEFINITION_FILE = task_definition.json
