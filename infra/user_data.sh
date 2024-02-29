@@ -1,0 +1,1 @@
+echo ECS_AVAILABLE_LOGGING_DRIVERS='["splunk"]' >> /etc/ecs/ecs.config

@@ -1,82 +1,78 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
-stages:
-  # - test
-  - build
-  - deploy
-# sast:
-#   stage: test
-
-image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
 
 services:
   - docker:dind
 
-before_script:
-  - amazon-linux-extras install docker
-  - aws --version
-  - docker --version
+stages:
+  - test
+  - trivy file scan
+  - build
+  - trivy image scan
+  - deploy
+
+sast:
+  stage: test
+
+image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+
+trivy-file-scan:
+  stage: trivy file scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy fs . 
 
 docker-build:
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   stage: build
   script:
+    # - aws --version
+    # - docker --version
     - echo Login AWS ${AWS_DEFAULT_REGION} ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest 
-    # 730866387406.dkr.ecr.us-east-1.amazonaws.com/comentarios-api
     - aws ecr get-login-password --region "${AWS_DEFAULT_REGION}" | docker login --username AWS --password-stdin "$CI_AWS_ECR_REPOSITORY_URL"
     - echo "Building image for ${CI_COMMIT_TAG}"
     - docker build -t ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest .
     - echo "Pushing image..."
-    - docker push ${CI_AWS_ECR_REPOSITORY_URL}:${CI_COMMIT_TAG}
-    - docker push ${CI_AWS_ECR_REPOSITORY_URL}:latest
+    # - docker push ${CI_AWS_ECR_REPOSITORY_URL}:${CI_COMMIT_TAG}
+    - docker push ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest
   only:
     - dev
 
+scan-image:
+  stage: trivy image scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - echo ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest
+    - trivy image ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest
+
 deploy-aws-fargate:
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   stage: deploy
   script:
-    - echo $CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG
-    # - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_NAME" --region "${AWS_DEFAULT_REGION}")
-    # - NEW_CONTAINER_DEFINTIION=$(echo $CI_AWS_ECS_TASK_DEFINITION | jq --arg IMAGE "$CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
-    # - echo "Registering new container definition..."
+    - echo ${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest
+    - TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition "$CI_AWS_ECS_TASK_DEFINITION" --region "${AWS_DEFAULT_REGION}")
+    - echo ${TASK_DEFINITION}
+    - NEW_CONTAINER_DEFINTIION=$(echo $TASK_DEFINITION | jq --arg IMAGE "${CI_AWS_ECR_REPOSITORY_URL}/comentarios-api:latest" '.taskDefinition.containerDefinitions[0].image = $IMAGE | .taskDefinition.containerDefinitions[0]')
+    - echo "Registering new container definition..." ${NEW_CONTAINER_DEFINTIION}
+    ## melhorar isso com depois atualizando a image-tag com uma nova revisao de task-definition
     # - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
-
+    # - aws ecs register-task-definition --region "${AWS_DEFAULT_REGION}" --family "${CI_AWS_ECS_TASK_DEFINITION}" --cli-input-json "${CI_AWS_ECS_TASK_DEFINITION_FILE}" --container-definitions "${NEW_CONTAINER_DEFINTIION}"
     - echo "Updating the service..."
-    #- aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}"  --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
-    # melhorar isso com depois atualizando a image-tag com uma nova revisao de task-definition
+    # - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}"  --task-definition "${CI_AWS_ECS_TASK_DEFINITION}"
     - aws ecs update-service --region "${AWS_DEFAULT_REGION}" --cluster "${CI_AWS_ECS_CLUSTER}" --service "${CI_AWS_ECS_SERVICE}" --force-new-deployment
   only:
-    - dev 
-
-# stages:
-#   - trivy file scan
-#   # - trivy image scan
-
-# Trivy-file-scan:
-#   stage: trivy file scan
-#   image:
-#     name: aquasec/trivy:latest
-#     entrypoint: [""]
-#   script:
-#     - trivy fs . 
-
-# Scan-image:
-#   stage: trivy image scan
-#   image:
-#     name: aquasec/trivy:latest
-#     entrypoint: [""]
-#   script:
-#     - echo $CCI_AWS_ECR_REPOSITORY_URLL:$IMAGE_TAG
-#     - trivy image $CI_AWS_ECR_REPOSITORY_URL:$IMAGE_TAG
-
-
-# include:
-#   - template: Security/SAST.gitlab-ci.yml
-  # - template: Jobs/SAST.gitlab-ci.yml
+    - dev
+  dependencies:
+    - "docker-build"
+  
+include:
+- template: Security/SAST.gitlab-ci.yml
 #   - template: AWS/Deploy-ECS.gitlab-ci.yml
 
 # CI_AWS_ECS_CLUSTER

@@ -30,6 +30,7 @@ def healthcheck():
     response = {
             'status': 'SUCCESS',
             'message': 'Working OK',
+            'container': 'comentarios-api',
             'timestamp': request_time
         }
     return jsonify(response)
