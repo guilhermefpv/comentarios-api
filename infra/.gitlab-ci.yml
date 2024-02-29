@@ -1,0 +1,69 @@
+#setup inicial provisionamento de infra na aws
+stages:
+  - validate
+  - plan
+  - apply
+  - destroy
+sast:
+  stage: test
+
+image:
+  name: hashicorp/terraform:light
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+cache:
+  paths:
+    - .terraform
+before_script:
+  - export AWS_ACCESS_KEY=${AWS_ACCESS_KEY_ID}
+  - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+  # - cd aws-ecs
+  - apk update
+  - apk add bash
+  - rm -rf .terraform
+  - |
+    cat > ~/.terraformrc <<EOL
+    credentials "app.terraform.io" {
+      token = "${TF_CLOUD_TOKEN}"
+    }
+    EOL
+  - terraform --version
+  - terraform init -upgrade
+  - terraform workspace list
+
+terraform-validate:
+  stage: validate
+  script:
+    - terraform validate
+
+terraform-plan:
+  stage: plan
+  script:
+    - terraform plan -out=tfplan
+  artifacts:
+    paths:
+      - tfplan
+  dependencies:
+    - terraform-validate
+
+terraform-apply:
+  stage: apply
+  script:
+    - terraform apply -auto-approve tfplan
+    - pwd
+    - ls -l
+  when: manual
+  artifacts:
+    paths:
+      - artifacts
+  dependencies:
+    - terraform-plan
+
+destroy:
+  stage: destroy
+  script:
+    - terraform init 
+    - terraform destroy -auto-approve
+  when: manual
+
