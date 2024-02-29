@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  comentarios-api:
+    build:
+      context: .
+      target: production
+    image: "comentarios-api"
+    container_name: comentarios-api
+    hostname: comentarios-api
+    ports:
+      - "8080:8080"
+    environment:
+      FLASK_ENV: prod
+      FLASK_DEBUG: 0
+      LOG_LEVEL: info
+      GUNICORN_WORKERS: 4
