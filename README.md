@@ -1,21 +1,21 @@
 # Automação da infraestrutura
 
-Repositório do projeto [terraform-ecs-fargate](https://gitlab.com/souzafpv/terraform-ecs-fargate), executa a pipeline CI/CD para deploy da infraestrutura ma AWS.
+Repositório do projeto [terraform-ecs-fargate](https://gitlab.com/souzafpv/terraform-ecs-fargate), executa a pipeline CI/CD para deploy da infraestrutura na AWS.
 
 
 ## AWS ECS Fargate
-Executando aplicações em contêiner na nuvem sem gerenciar servidores EC2
+Executando aplicações em contêiner na nuvem sem a necessidade de gerenciar Instâncias EC2
 
 ## Diagrama da Infraestrutura 
 <img title="Diagrama da Infraestrutura" alt="Diagrama da Infraestrutura" src="infra-ecs-fargate.png">
 
-## Recursos
+## Recursos provisionados
 
 - Virtual Private Cloud (VPC)
 - Balanceador de Carga de Aplicação (ALB)
 - Definição de Cluster, Serviço e Tarefa do ECS
 - Gerenciamento de Acesso à Identidade (IAM)
-- Grupos Segurança
+- Grupos de Segurança
 - Grupo de log do CloudWatch
 - Repositório de imagens ECR
 
@@ -23,7 +23,7 @@ Executando aplicações em contêiner na nuvem sem gerenciar servidores EC2
 
 Provisionar todos os recursos para executar a Aplicação.
 
-## Configura o TFC
+## Configura o TFC para backend dos tfstates
 ```
     terraform {
 
